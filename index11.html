@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>关键字搜索</title>
+	</head>
+	<style>
+		body{ margin: 0; padding: 0;}
+		.Keyword{ width: 100%; height: 30px; border: solid 1px #ccc; padding: 0 5px; margin: 0;}
+		ul{ margin: 0 ; padding: 0 ;}
+		li{ list-style: none;}
+		li strong{ color: orangered;}
+		.search-results{ margin: 40px; background: #ececec;}
+		.search-results li{ height: 40px; line-height: 40px;}
+		.search-results ul{ width: 100%;}
+		.search-results ul.result li.active{ background: #ECECEC;}
+		.search-results ul.result li:hover{ background: #ECECEC;}
+	</style>
+	<body>
+		
+		<div class="search-results">
+			<input type="search" id="Keyword" class="Keyword" />
+		</div>
+		<script src="js/jquery-1.11.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			;(function(){
+				var that,$option,data = [],config;
+				function SearchTip(){
+					return this;
+				};
+				SearchTip.prototype.start = function(fng){
+					console.log(this)
+					var _this = this;
+					$option = $.extend(true, {
+						result : ".search-results",
+						ajaxUrl:"js/data.js",
+						maxLength:false
+					}, fng);
+					$.get($option.ajaxUrl,function(){
+						data = eval(arguments[0]);
+						_this.bindInput.call($.extend(true, _this, $option));
+					});
+					$($option.result).css("position") != "absolute" && $($option.result).css("position") != "fixed" ? $($option.result).css("position","relative") : "";
+					return this;
+				};
+				SearchTip.prototype.bindInput = function(){
+					var _this = this,
+						config = {
+							li : "<li>",
+							$ul : $("<ul>",{"class":"result"}).css({"position":"absolute","left":"0","top":$(_this.result).height()}),
+							$a : $("<a>")
+						};
+					$("input[type=search]",this.result).on("input",function(){
+						var val =$(this).val() , obj =[] ,num = 0;
+						$("ul.result",_this.result).html("");
+						$.each(data, function(v,k) {
+							if(val!='' && k.name.indexOf(val) > -1){
+								var txt = k.name.replace(val,'<strong>'+val+'</strong>');
+								obj.push("<li>"+ txt +"</li>");
+								if(typeof(_this.maxLength) === "number" && num == _this.maxLength - 1){return false;};
+								num++;
+							}
+						});
+						config.$ul.append(obj.join(""));
+						$(_this.result).append(config.$ul);
+						_this.keyUp.call(_this);
+					});
+					return this;
+				};
+				SearchTip.prototype.keyUp = function(){
+					var _this = this;
+					$(this.result).on("keyup",function(e){
+						switch (e.keyCode){
+							case 38://up
+								_this.keyUp_up.call(_this);
+								break;
+							case 40: //down
+								_this.keyUp_down.call(_this);
+								break;
+						}
+					});
+				};
+				SearchTip.prototype.keyUp_up = function(){
+					var _this = this,
+						index = $("ul>li.active",this.result).index(),
+						length =  $("ul>li",this.result).length;
+						//alert(index)
+				};
+				window.searchTip = SearchTip;
+			})();
+			
+			var search = new searchTip();
+			search.start({result:".search-results",ajaxUrl:"js/data.json",maxLength:2});
+
+		</script>
+	</body>
+</html>
