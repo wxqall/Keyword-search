@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>关键字搜索</title>
+	</head>
+	<style>
+		body{ margin: 0; padding: 0;}
+		.searchBox{ position: relative;}
+		.Keyword{ width: 499px; height: 30px; border: solid 1px #ccc; padding: 0 5px; margin: 20px 0 10px 50px;}
+		.searchBox p{ margin-left: 50px; color: #666; font-size: 12px;}
+		ul{ margin: 0 ; padding: 0 ;}
+		li{ list-style: none;}
+		.search-results{ padding: 40px; background: #ececec;}
+		.search-results li{ height: 40px; line-height: 40px;}
+		.red{ color: #f00;}
+		.searchBox .close{ font-family: arial; font-size: 14px; position: absolute; left: 540px; top: 27px; cursor: pointer; display: none;}
+		.searchBox .close:hover{ color: #f00;}
+	</style>
+	<body>
+		
+		<div class="searchBox">
+			<input type="text" id="Keyword" class="Keyword" />
+			<p>请输入如：东北,地区,身份证,网络,上海....等字来浏览效果</p>
+			<p>由于读取json数据,请在服务器路径下浏览.</p>
+		</div>
+		
+		<script type="text/javascript" src="js/jquery-1.11.1.min.js" ></script>
+		<script>
+		 	;(function(){
+		 		function SearchTip(){
+				}
+				SearchTip.prototype.init = function(fng){
+					this.option = $.extend(true, {
+						searchBox:".searchBox",
+						SearchInput:"#Keyword",
+						ajaxUrl:"js/data.js"
+					}, fng);
+					this.box = {
+						$results:$("<div>",{"class":"search-results"}),
+						$inputClose:$("<a>",{"class":"close"}).html("X")
+					}
+					$(this.option.searchBox).append(this.box.$results);
+					$(this.option.searchBox).append(this.box.$inputClose);
+					
+					$.get(this.option.ajaxUrl,function(){
+						data = eval(arguments[0]);
+					});
+					this.bindInput();
+					this.Close();
+					return this;
+				};
+				
+				SearchTip.prototype.bindInput = function(){
+					var _this = this;
+					$(this.option.SearchInput).on("input",function(){
+						var val = $(this).val();
+						var obj =[];
+						$(_this.box.$results).empty();
+						$.each(data, function(k,v) {
+							if(val != "" && v.name.indexOf(val)> -1){
+								var txt = v.name.replace(val,'<strong class="red">'+val+'</strong>');
+								obj.push("<li>"+txt+"</li>");
+							}else if(val == ""){
+								
+								_this.box.$inputClose.hide();
+								_this.Close();
+							}else{
+								_this.box.$inputClose.show();
+								$(_this.box.$results).text("没有找到您输入相关信息哦")
+							}
+						});
+						$(_this.box.$results).append(obj);
+					});
+				}
+				SearchTip.prototype.Close = function(){
+					var _this = this;
+					_this.box.$inputClose.on("click",function(){
+						_this.box.$inputClose.hide();
+						$(_this.option.SearchInput).val("");
+						$(_this.box.$results).empty();
+					})
+				}
+				window.searchTip = SearchTip;
+		 	})();
+		 	
+		 	var search = new searchTip();
+			search.init({});
+			
+		</script>
+	</body>
+</html>
